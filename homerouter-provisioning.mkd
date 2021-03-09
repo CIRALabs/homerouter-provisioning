@@ -250,7 +250,68 @@ homerouter-certificate-response = {
 
 # Certificate Expiry/Renewal Protocol
 
-Via store-and-forward with some javascript on port 80 and/or an App.
+A router should continue to function even if it believes that the certificate that it has has expired.
+There are three reasons for this:
+
+1. the device's real time clock may be wrong.  What matters is not the device's view of it's certificate validity, but the view of other devices.
+
+2. a certificate renewal may be in progress, and it may be necessary to see that the expired certificate (via HTTPS) in order to perform the renewal process.
+
+3. the device may need expert operator intervention, and the judicial use of an HTTPS connection secured with an expired certificate may be better than using an insecured connection.
+
+A device SHOULD attempt to renew it's certificate starting seven days before it expires.
+
+## Automatic Certificate Renewal
+
+Within the protocol return details returned above (see {{certreply}}), the renewal-URL attribute will have been returned.
+
+The device MAY poll for correct connectivity to this URL using the GET method.
+The GET method SHOULD return the string "homerouter-provision".
+It is quite possible that device will not have internet connectivity when it is first powered on.
+It is also possible that the device is behind some captive portal.
+
+The renewal-URL SHOULD be an HTTPS URL, and the certificate SHOULD be verified with {{RFC6125}} DNS-ID rules.
+
+When connectivity has been established, then the device should then repeat the POST operation described above in {{certrequest}}.
+But, for the renewals, the device will use TLS Client Certificate authentication.
+The device is expected to use the certificate that it has, even if it has expired.
+
+## Assisted Certificate Renewal
+
+In the event that the device has no Internet connectivity, it will not be able to connect to the renewal-URL that was specified.
+
+A typical situation in which this is acute is when the device is a DSL based home router, and the device will not have any connectivity until a PPPoE username/password has been entered.
+
+The exact manner in which the process described in this section is invoked may be dependent upon the nature of the device.
+Some additional recommendations are in section {{thirdparty}}.
+
+This section starts with the assumption that the above proceedure has directed the home owner/device-operator to an unsecured web page, such as http://nXXYYZZ.r.example.net/renew.
+The second assumption is that the operator's browsing device has access to the Internet via another network: for a smartphone this might be an LTE network, but for other scenarios this might involve changing wiring or physically moving the device to another location where there is already connectivity.
+
+The web page in question will have a ECMAscript program.
+
+A request structure as described in {{certrequest}} is either loaded via an HTTP call,
+or is included in the original page load.
+
+After confirming with the operator that the other network is available (see above), then the ECMAscript program will then POST the request to the manufacturer's renewal URL.
+This effort requires some pre-arrangement: the manufacturer's renewal server must
+list all of http://*.r.example.net/ as a valid Cross-Origin [ref CORS specification].
+
+The result of the POST to the manufacturer's renewal URL is then sent back to the device via HTTP.
+
+In addition to the process above, the date and time on the device can be optionally updated to  that of the operator's device, if they differ by a lot.
+
+## Renewed Certificate Properties
+
+In the assisted renewal certificate protocol, the new certificate will have passed through at least unsecure connection.
+The question arrises about whether the resulting certificate is trustworthy.
+
+The device SHOULD apply the following criteria to the certificate before accepting it as valid.
+First, the certificate MUST be valid: the signature verifies with known trust anchors, the notBefore is not in the future, and the notAfter is not in the past.
+Second, the certificate MUST name a public key which corresponds to the public key that the device posseses.
+Third, the certificate MUST name, in the subjectAltName (SAN) extension, the name of the device as configured in the HTTP hostname.
+(It may have multiple SAN extensions with other names)
+
 
 # Privacy Considerations
 
