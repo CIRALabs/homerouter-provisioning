@@ -192,7 +192,61 @@ The device, even when not connected to the Internet, will answer DNS queries for
 
 # Protocol Details
 
-Many bits to fill in.
+The mechanism described here is a close to {{RFC7030}}'s /simpleenroll mechanism, however there is a need for a number of additional attributes in the request, and in the response.
+As a result, a JSON based format is employed, which is described in by the CDDL in each section.
+
+## Certificate Request Contents {#certrequest}
+
+The Certificate Request is a JSON structure as follows:
+
+~~~~
+homerouter-provision-request = {
+   ? "wan-mac": text,
+   ? "switch-mac": text,
+   "ula": text,
+   "csr": text,
+}
+~~~~
+
+wan-mac:
+: this is a unique identifier, usually an IEEE OUI (MAC address) of the outside (internet facing) interface of the device.
+
+switch-mac:
+: this a second unique identifier, usually an IEEE OUI (MAC address) of the inside interface (LAN facing) of the device.
+
+ula:
+: this the IPv6 Unique Local Address (ULA) which the device of the device, which has been generated, as required by {{RFC7084}}.
+This is not just the /48 prefix, but rather an IP address on which the device will respond.
+
+csr:
+: a base64 encoding of the DER encoded Certificate Request (without the wrapping "BEGIN CERTIFICATE REQUEST").
+
+
+The wan-mac/switch-mac identifiers are included to connect this device back to the correct device in the manufacturer's database.
+These are optional for devices which have not yet had them configured.
+
+It is possible to provision the MAC addresses in the response.
+
+If the provisioning system is directly connected on the same IPv6 Link, or if a suitably intelligent proxy is present, then it is possible for the provisioning system to validate that the request is coming from one of the aforementioned layer-2 addresses.
+
+As the initial run of this protocol is expected to occur across a wired network in a physically secure factory environment, the value of the above check is questionable.
+The primary purpose of the identifiers is as an index into an asset database.
+
+## Certificate Response Contents {#certreply}
+
+The Certificate Response is a JSON structure as follows:
+
+~~~~
+homerouter-certificate-response = {
+   ? "certificate" : text,
+   ? "error" : text,
+   ? "renewal-url" : text,
+   ? "name"  : text,
+   ? "current-datetime" : text,
+   ? "wan-mac" : text,
+   ? "switch-mac" : text,
+}
+~~~~
 
 # Certificate Expiry/Renewal Protocol
 
