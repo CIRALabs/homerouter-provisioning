@@ -327,8 +327,12 @@ Many to be discussed.
 
 Hello.
 
-# Changelog
-
-
 --- back
 
+# Changelog
+
+-01 Added section on renewal and protocol details fleshed out.
+
+# Recommendations for ISP Provisioned Devices {{#ispprovision}}
+
+# Recommendations for Third Party Device Flows {{#thirdparty}}
